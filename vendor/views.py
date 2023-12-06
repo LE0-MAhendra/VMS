@@ -1,10 +1,10 @@
 from django.shortcuts import render
-from .models import Vendor, PurchaseOrder, HistoricalPerformance
+from .models import Vendor, PurchaseOrder
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
-from .serializers import VendorSerializer, POSerializer, HPSerializer
+from .serializers import PESerializer, VendorSerializer, POSerializer, HPSerializer
 
 # Create your views here.
 
@@ -142,4 +142,13 @@ def purchase_order(request, pk):
 
 @api_view(["GET"])
 def get_performance(request, pk):
-    pass
+    try:
+        vendor = Vendor.objects.get(id=pk)
+    except Vendor.DoesNotExist:
+        return Response(
+            {"message": f"no Vendor Exists with this {pk} id"},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+    if request.method == "GET":
+        serializer = PESerializer(vendor)
+        return Response(serializer.data)
