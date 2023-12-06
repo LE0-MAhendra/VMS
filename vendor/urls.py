@@ -10,4 +10,9 @@ urlpatterns = [
     path("purchase_orders/<int:pk>/", views.purchase_order, name="Edit_PO"),
     # Vendor Performance urls
     path("vendors/<int:pk>/performance", views.get_performance, name="performance"),
+    path(
+        "purchase_orders/<int:pk>/acknowledge",
+        views.edit_acknowledgement,
+        name="edit_ED",
+    ),
 ]

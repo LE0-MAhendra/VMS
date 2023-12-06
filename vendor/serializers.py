@@ -29,3 +29,9 @@ class PESerializer(serializers.ModelSerializer):
             "average_response_time",
             "fulfillment_rate",
         )
+
+
+class AcknowledgeEditSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PurchaseOrder
+        fields = ["acknowledgment_date"]

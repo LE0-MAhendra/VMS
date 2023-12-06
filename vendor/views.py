@@ -4,7 +4,13 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
-from .serializers import PESerializer, VendorSerializer, POSerializer, HPSerializer
+from .serializers import (
+    AcknowledgeEditSerializer,
+    PESerializer,
+    VendorSerializer,
+    POSerializer,
+    HPSerializer,
+)
 
 # Create your views here.
 
@@ -149,6 +155,27 @@ def get_performance(request, pk):
             {"message": f"no Vendor Exists with this {pk} id"},
             status=status.HTTP_404_NOT_FOUND,
         )
-    if request.method == "GET":
-        serializer = PESerializer(vendor)
-        return Response(serializer.data)
+    serializer = PESerializer(vendor)
+    return Response(serializer.data)
+
+
+@api_view(["POST"])
+def edit_acknowledgement(request, pk):
+    try:
+        vendor = PurchaseOrder.objects.get(id=pk)
+    except PurchaseOrder.DoesNotExist:
+        return Response(
+            {"message": f"no Vendor Exists with this {pk} id"},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+    serializer = AcknowledgeEditSerializer(
+        instance=vendor, data=request.data, partial=True
+    )
+    if serializer.is_valid():
+        serializer.save()
+        return Response(
+            {"message": f"Acknowledgment date for Vendor {pk} updated successfully."},
+            status=status.HTTP_200_OK,
+        )
+    else:
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
