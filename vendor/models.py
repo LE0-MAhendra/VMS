@@ -1,6 +1,8 @@
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.utils.timesince import timesince
+from django.utils import timezone
 
 
 # Create your models here.
@@ -54,14 +56,12 @@ class PurchaseOrder(models.Model):
                 # __lte refers to less than or equal to
                 delivery_date__lte=self.delivery_date
             ).count()
-            # print(f"pos_on_time_delivered{pos_on_time_delivered}")
             if pos_completed_count > 0:
                 self.vendor.on_time_delivery_rate = (
                     pos_on_time_delivered / pos_completed_count
                 ) * 100
             else:
                 self.vendor.on_time_delivery_rate = 0
-            # print(f"ontimedelivery rate{self.vendor.on_time_delivery_rate}")
         # Updating the  Quality Rating Average upon completion
         if self.quality_rating is not None and pos_completed is not None:
             if pos_completed_count > 0:
@@ -71,7 +71,6 @@ class PurchaseOrder(models.Model):
                 )
             else:
                 self.vendor.quality_rating_avg = 0
-            # print(f"quality_rating_avg {self.vendor.quality_rating_avg}")
         # Calculating the  Average Response Time upon acknowledgment
         if self.acknowledgment_date is not None:
             pos_all_acknowledged = PurchaseOrder.objects.filter(
@@ -93,7 +92,6 @@ class PurchaseOrder(models.Model):
                 if pos_all_acknowledged_count > 0
                 else 0
             )
-            # print(f"avg time {self.vendor.average_response_time}")
 
         # Calculating the  Fulfilment Rate upon any change in PO status
         all_pos = PurchaseOrder.objects.filter(vendor=self.vendor)
@@ -105,7 +103,6 @@ class PurchaseOrder(models.Model):
             if all_pos.count() > 0
             else 0
         )
-        # print(f"Fulfillment Rate: {self.vendor.fulfillment_rate}")
         # save the changes into vendor
         self.vendor.save()
         update_historical_performance(self)
@@ -120,7 +117,8 @@ class HistoricalPerformance(models.Model):
     fulfillment_rate = models.FloatField()
 
     def __str__(self):
-        return f"{self.vendor} - {self.date}"
+        time_since = timesince(self.date, timezone.now())
+        return f"{self.vendor.name} - {time_since} ago"
 
 
 def update_historical_performance(instance):

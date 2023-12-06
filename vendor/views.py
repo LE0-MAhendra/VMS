@@ -63,12 +63,81 @@ def vendor(request, pk):
 
 @api_view(["POST", "GET"])
 def purchase_orders(request):
-    pass
+    if request.method == "GET":
+        try:
+            pos = PurchaseOrder.objects.all()
+        except PurchaseOrder.DoesNotExist:
+            return Response(
+                {"message": "no POS Exists please add a Purchase order"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        serializer = POSerializer(pos, many=True)
+        return Response(serializer.data)
+    elif request.method == "POST":
+        data = request.data
+        vendor_id = data.get("vendor")
+
+        # Check if the vendor ID is valid
+        try:
+            checker = Vendor.objects.get(id=vendor_id)
+        except Vendor.DoesNotExist:
+            return Response(
+                {"message": f"Vendor with ID {vendor_id} does not exist."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if checker:
+            serializer = POSerializer(data=data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(
+                    {"message": "Purchase Order added successfully"},
+                    status=status.HTTP_201_CREATED,
+                )
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(["GET", "PUT", "DELETE"])
 def purchase_order(request, pk):
-    pass
+    try:
+        pos = PurchaseOrder.objects.get(id=pk)
+    except PurchaseOrder.DoesNotExist:
+        return Response(
+            {"message": "no POS Exists please add a Purchase order"},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+    # if checker and pos:
+    if request.method == "GET":
+        serializer = POSerializer(pos)
+        return Response(serializer.data)
+    elif request.method == "PUT":
+        data = request.data
+        vendor_id = data.get("vendor")
+
+        # Check if the vendor ID is valid
+        try:
+            checker = Vendor.objects.get(id=vendor_id)
+        except Vendor.DoesNotExist:
+            return Response(
+                {"message": f"no Vendor Exists with this {vendor_id} id"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        data = request.data
+        serializer = POSerializer(pos, data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"message": f"Purchse order data for this {pk} id is updated"},
+                status=status.HTTP_200_OK,
+            )
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    elif request.method == "DELETE":
+        pos.delete()
+        return Response(
+            {"message": "Purchase order is Deleted"}, status=status.HTTP_200_OK
+        )
 
 
 @api_view(["GET"])
