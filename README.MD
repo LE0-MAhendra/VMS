@@ -38,6 +38,7 @@ Run the following commands to set up and run the project:
 ```bash
 python manage.py makemigrations
 python manage.py migrate
+# createsuperuser if you want to add data =>   python manage.py createsuperuser
 python manage.py runserver
 ```
 
