@@ -7,7 +7,7 @@ This is a backend API project for a Vendor Management System. It provides APIs f
 1. Clone the repository:
 
    ```bash
-   https://github.com/LE0-MAhendra/VMS.git
+   git clone https://github.com/LE0-MAhendra/VMS.git
    ```
 
 2. Navigate to the project directory:
